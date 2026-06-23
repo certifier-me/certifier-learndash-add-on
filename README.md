@@ -28,13 +28,7 @@ Upload and activate the official LearnDash LMS plugin in the local WordPress adm
 2. Set the Certifier API base URL, for example `https://api.certifier.io`.
 3. Paste a Certifier personal access token.
 4. Go to `Certifier for LearnDash -> Course Issuance`.
-5. Add course mappings, one per line:
-
-```text
-123=01hzy8examplegroupid
-```
-
-The left side is the LearnDash course post ID. The right side is the Certifier group ID.
+5. Select a LearnDash course and the Certifier group that should be issued when that course is completed.
 
 ## API request
 
@@ -61,7 +55,7 @@ with:
 
 1. Upload and activate the official LearnDash LMS plugin.
 2. Create a course.
-3. Map that course ID to a Certifier group ID.
+3. Map the course to a Certifier group.
 4. Enroll a test user.
 5. Complete the course as that user.
 6. Confirm the credential appears in Certifier.

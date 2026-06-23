@@ -166,7 +166,7 @@ if ( ! class_exists( 'Certifier_Learndash_Settings' ) ) :
 		 * @param array<string, mixed> $input Raw settings.
 		 */
 		private static function has_course_mappings_input( $input ) {
-			return array_key_exists( 'course_mappings', $input ) || array_key_exists( 'course_mappings_text', $input );
+			return array_key_exists( 'course_mappings', $input ) || array_key_exists( 'course_mappings_text', $input ) || array_key_exists( 'course_mappings_present', $input );
 		}
 
 		/**
@@ -179,8 +179,16 @@ if ( ! class_exists( 'Certifier_Learndash_Settings' ) ) :
 			$mappings = array();
 
 			if ( isset( $input['course_mappings'] ) && is_array( $input['course_mappings'] ) ) {
-				foreach ( $input['course_mappings'] as $course_id => $group_id ) {
-					self::add_mapping( $mappings, $course_id, $group_id );
+				foreach ( $input['course_mappings'] as $course_id => $mapping ) {
+					if ( is_array( $mapping ) ) {
+						self::add_mapping(
+							$mappings,
+							$mapping['course_id'] ?? 0,
+							$mapping['group_id'] ?? ''
+						);
+					} else {
+						self::add_mapping( $mappings, $course_id, $mapping );
+					}
 				}
 			}
 

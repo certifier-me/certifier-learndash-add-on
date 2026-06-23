@@ -20,9 +20,11 @@ This plugin requires an active LearnDash LMS installation and a Certifier accoun
 
 = External services =
 
-This plugin connects to the Certifier API to create, issue, and send credentials.
+This plugin connects to the Certifier API to load available Certifier groups and to create, issue, and send credentials.
 
 By default, requests are sent to `https://api.certifier.io`. Site administrators may change the API base URL in the plugin settings.
+
+When the Course Issuance screen is opened, the plugin requests the list of Certifier groups for the saved access token so the groups can be selected from a dropdown.
 
 When a mapped LearnDash course is completed, the plugin sends the learner name, learner email address, mapped Certifier group ID, and issue date to Certifier. This happens only after a site administrator configures a Certifier access token and course mappings.
 
@@ -36,7 +38,7 @@ Service information is available at https://certifier.io.
 4. Go to Certifier for LearnDash > Settings.
 5. Add your Certifier API base URL and personal access token.
 6. Go to Certifier for LearnDash > Course Issuance.
-7. Add mappings in the format `LEARNDASH_COURSE_ID=CERTIFIER_GROUP_ID`.
+7. Select the LearnDash course and Certifier group to issue when the course is completed.
 
 == Frequently Asked Questions ==
 

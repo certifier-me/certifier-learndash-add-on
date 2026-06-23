@@ -26,6 +26,7 @@ if ( ! class_exists( 'Certifier_Learndash_Admin' ) ) :
 			add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 			add_action( 'admin_init', array( $this, 'register_settings' ) );
 			add_action( 'admin_init', array( $this, 'add_privacy_policy_content' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
 			add_action( 'admin_notices', array( $this, 'render_admin_notices' ) );
 			add_action( 'admin_post_certifier_learndash_test_connection', array( $this, 'handle_test_connection' ) );
 		}
@@ -110,6 +111,23 @@ if ( ! class_exists( 'Certifier_Learndash_Admin' ) ) :
 			wp_add_privacy_policy_content(
 				__( 'Certifier for LearnDash', 'certifier-learndash' ),
 				wp_kses_post( wpautop( $content, false ) )
+			);
+		}
+
+		/**
+		 * Enqueue plugin admin assets.
+		 */
+		public function enqueue_admin_assets( $hook_suffix ) {
+			if ( false === strpos( (string) $hook_suffix, 'certifier-learndash-course-issuance' ) ) {
+				return;
+			}
+
+			wp_enqueue_script(
+				'certifier-learndash-admin',
+				CERTIFIER_LEARNDASH_PLUGIN_URL . 'assets/js/admin.js',
+				array(),
+				CERTIFIER_LEARNDASH_VERSION,
+				true
 			);
 		}
 
@@ -288,50 +306,59 @@ if ( ! class_exists( 'Certifier_Learndash_Admin' ) ) :
 			}
 
 			$settings      = Certifier_Learndash_Settings::get();
-			$mappings_text = Certifier_Learndash_Settings::mappings_to_text( $settings['course_mappings'] );
+			$mappings      = $settings['course_mappings'];
 			$courses       = $this->get_learndash_courses();
+			$groups_result = $this->get_certifier_groups();
+			$groups        = $groups_result['groups'];
+			$rows          = $this->get_mapping_rows( $mappings );
 			?>
 			<div class="wrap">
 				<h1><?php esc_html_e( 'Course Issuance', 'certifier-learndash' ); ?></h1>
 
+				<?php if ( empty( $courses ) ) : ?>
+					<div class="notice notice-warning inline">
+						<p><?php esc_html_e( 'No LearnDash courses were detected. Create at least one LearnDash course before adding mappings.', 'certifier-learndash' ); ?></p>
+					</div>
+				<?php endif; ?>
+
+				<?php if ( ! empty( $groups_result['message'] ) ) : ?>
+					<div class="notice notice-warning inline">
+						<p><?php echo esc_html( $groups_result['message'] ); ?></p>
+					</div>
+				<?php endif; ?>
+
 				<form method="post" action="options.php">
 					<?php settings_fields( 'certifier_learndash' ); ?>
+					<input type="hidden" name="<?php echo esc_attr( Certifier_Learndash_Settings::OPTION_NAME ); ?>[course_mappings_present]" value="1" />
 
-					<table class="form-table" role="presentation">
-						<tbody>
+					<table class="widefat striped" data-certifier-mappings data-certifier-next-index="<?php echo esc_attr( count( $rows ) ); ?>">
+						<thead>
 							<tr>
-								<th scope="row">
-									<label for="certifier_learndash_course_mappings_text"><?php esc_html_e( 'Course mappings', 'certifier-learndash' ); ?></label>
-								</th>
-								<td>
-									<textarea
-										id="certifier_learndash_course_mappings_text"
-										name="<?php echo esc_attr( Certifier_Learndash_Settings::OPTION_NAME ); ?>[course_mappings_text]"
-										class="large-text code"
-										rows="8"
-										placeholder="123=01hzy8examplegroupid"
-									><?php echo esc_textarea( $mappings_text ); ?></textarea>
-									<p class="description">
-										<?php esc_html_e( 'Add one mapping per line: LearnDash course ID = Certifier group ID. Credentials are issued when LearnDash fires course completion for a mapped course.', 'certifier-learndash' ); ?>
-									</p>
-
-									<?php if ( ! empty( $courses ) ) : ?>
-										<p><?php esc_html_e( 'Detected LearnDash courses:', 'certifier-learndash' ); ?></p>
-										<ul>
-											<?php foreach ( $courses as $course ) : ?>
-												<li>
-													<code><?php echo esc_html( $course->ID ); ?></code>
-													<?php echo esc_html( get_the_title( $course ) ); ?>
-												</li>
-											<?php endforeach; ?>
-										</ul>
-									<?php else : ?>
-										<p class="description"><?php esc_html_e( 'No LearnDash courses detected yet.', 'certifier-learndash' ); ?></p>
-									<?php endif; ?>
-								</td>
+								<th><?php esc_html_e( 'LearnDash course', 'certifier-learndash' ); ?></th>
+								<th><?php esc_html_e( 'Certifier group', 'certifier-learndash' ); ?></th>
+								<th><?php esc_html_e( 'Actions', 'certifier-learndash' ); ?></th>
 							</tr>
+						</thead>
+						<tbody data-certifier-mapping-rows>
+							<?php foreach ( $rows as $row_index => $row ) : ?>
+								<?php $this->render_mapping_row( $row_index, $row['course_id'], $row['group_id'], $courses, $groups ); ?>
+							<?php endforeach; ?>
 						</tbody>
 					</table>
+
+					<p>
+						<button type="button" class="button" data-certifier-add-mapping>
+							<?php esc_html_e( 'Add mapping', 'certifier-learndash' ); ?>
+						</button>
+					</p>
+
+					<p class="description">
+						<?php esc_html_e( 'Credentials are issued when LearnDash fires course completion for a mapped course. Certifier groups are loaded from the access token saved in Settings.', 'certifier-learndash' ); ?>
+					</p>
+
+					<template data-certifier-mapping-template>
+						<?php $this->render_mapping_row( '__index__', 0, '', $courses, $groups ); ?>
+					</template>
 
 					<?php submit_button( __( 'Save course mappings', 'certifier-learndash' ) ); ?>
 				</form>
@@ -484,6 +511,164 @@ if ( ! class_exists( 'Certifier_Learndash_Admin' ) ) :
 					'order'          => 'ASC',
 				)
 			);
+		}
+
+		/**
+		 * Get saved mapping rows for the UI.
+		 *
+		 * @param array<int, string> $mappings Saved mappings.
+		 * @return array<int, array{course_id:int, group_id:string}>
+		 */
+		private function get_mapping_rows( $mappings ) {
+			$rows = array();
+
+			foreach ( $mappings as $course_id => $group_id ) {
+				$rows[] = array(
+					'course_id' => absint( $course_id ),
+					'group_id'  => (string) $group_id,
+				);
+			}
+
+			if ( empty( $rows ) ) {
+				$rows[] = array(
+					'course_id' => 0,
+					'group_id'  => '',
+				);
+			}
+
+			return $rows;
+		}
+
+		/**
+		 * Fetch Certifier groups for dropdowns.
+		 *
+		 * @return array{groups:array<int, array{id:string, name:string}>, message:string}
+		 */
+		private function get_certifier_groups() {
+			if ( '' === Certifier_Learndash_Settings::get_access_token() ) {
+				return array(
+					'groups'  => array(),
+					'message' => __( 'Add a Certifier access token in Settings to load Certifier groups.', 'certifier-learndash' ),
+				);
+			}
+
+			$groups = array();
+			$cursor = null;
+
+			for ( $request_count = 0; $request_count < 10; $request_count++ ) {
+				$result = Certifier_Learndash_Api_Client::from_settings()->list_groups( $cursor );
+				if ( empty( $result['success'] ) ) {
+					return array(
+						'groups'  => $groups,
+						'message' => isset( $result['message'] ) ? $result['message'] : __( 'Certifier groups could not be loaded.', 'certifier-learndash' ),
+					);
+				}
+
+				$items = isset( $result['body']['data'] ) && is_array( $result['body']['data'] ) ? $result['body']['data'] : array();
+				foreach ( $items as $item ) {
+					if ( ! is_array( $item ) || empty( $item['id'] ) || empty( $item['name'] ) ) {
+						continue;
+					}
+
+					$groups[] = array(
+						'id'   => sanitize_text_field( (string) $item['id'] ),
+						'name' => sanitize_text_field( (string) $item['name'] ),
+					);
+				}
+
+				$cursor = isset( $result['body']['pagination']['next'] ) ? $result['body']['pagination']['next'] : null;
+				if ( empty( $cursor ) ) {
+					break;
+				}
+			}
+
+			return array(
+				'groups'  => $groups,
+				'message' => empty( $groups ) ? __( 'No Certifier groups were returned for the saved access token.', 'certifier-learndash' ) : '',
+			);
+		}
+
+		/**
+		 * Render one course-to-group mapping row.
+		 *
+		 * @param int|string                                $row_index Row index or template marker.
+		 * @param int|string                                $course_id Selected course ID.
+		 * @param string                                    $group_id Selected Certifier group ID.
+		 * @param WP_Post[]                                 $courses LearnDash courses.
+		 * @param array<int, array{id:string, name:string}> $groups Certifier groups.
+		 */
+		private function render_mapping_row( $row_index, $course_id, $group_id, $courses, $groups ) {
+			?>
+			<tr data-certifier-mapping-row>
+				<td>
+					<?php $this->render_course_select( $row_index, $course_id, $courses ); ?>
+				</td>
+				<td>
+					<?php $this->render_group_select( $row_index, $group_id, $groups ); ?>
+				</td>
+				<td>
+					<button type="button" class="button-link-delete" data-certifier-remove-mapping>
+						<?php esc_html_e( 'Remove', 'certifier-learndash' ); ?>
+					</button>
+				</td>
+			</tr>
+			<?php
+		}
+
+		/**
+		 * Render the LearnDash course dropdown.
+		 *
+		 * @param int|string $row_index Row index or template marker.
+		 * @param int|string $course_id Selected course ID.
+		 * @param WP_Post[]  $courses LearnDash courses.
+		 */
+		private function render_course_select( $row_index, $course_id, $courses ) {
+			$course_id        = absint( $course_id );
+			$course_ids       = wp_list_pluck( $courses, 'ID' );
+			$has_saved_course = $course_id > 0 && ! in_array( $course_id, array_map( 'absint', $course_ids ), true );
+			?>
+			<select name="<?php echo esc_attr( Certifier_Learndash_Settings::OPTION_NAME . '[course_mappings][' . $row_index . '][course_id]' ); ?>">
+				<option value=""><?php esc_html_e( 'Select a course', 'certifier-learndash' ); ?></option>
+				<?php if ( $has_saved_course ) : ?>
+					<option value="<?php echo esc_attr( $course_id ); ?>" selected>
+						<?php echo esc_html( sprintf( __( 'Course ID %d (not found)', 'certifier-learndash' ), $course_id ) ); ?>
+					</option>
+				<?php endif; ?>
+				<?php foreach ( $courses as $course ) : ?>
+					<option value="<?php echo esc_attr( $course->ID ); ?>" <?php selected( $course_id, $course->ID ); ?>>
+						<?php echo esc_html( sprintf( '#%1$d - %2$s', $course->ID, get_the_title( $course ) ) ); ?>
+					</option>
+				<?php endforeach; ?>
+			</select>
+			<?php
+		}
+
+		/**
+		 * Render the Certifier group dropdown.
+		 *
+		 * @param int|string                                $row_index Row index or template marker.
+		 * @param string                                    $group_id Selected Certifier group ID.
+		 * @param array<int, array{id:string, name:string}> $groups Certifier groups.
+		 */
+		private function render_group_select( $row_index, $group_id, $groups ) {
+			$group_id        = (string) $group_id;
+			$group_ids       = wp_list_pluck( $groups, 'id' );
+			$has_saved_group = '' !== $group_id && ! in_array( $group_id, $group_ids, true );
+			?>
+			<select name="<?php echo esc_attr( Certifier_Learndash_Settings::OPTION_NAME . '[course_mappings][' . $row_index . '][group_id]' ); ?>">
+				<option value=""><?php esc_html_e( 'Select a Certifier group', 'certifier-learndash' ); ?></option>
+				<?php if ( $has_saved_group ) : ?>
+					<option value="<?php echo esc_attr( $group_id ); ?>" selected>
+						<?php echo esc_html( sprintf( __( 'Saved group ID %s (not found)', 'certifier-learndash' ), $group_id ) ); ?>
+					</option>
+				<?php endif; ?>
+				<?php foreach ( $groups as $group ) : ?>
+					<option value="<?php echo esc_attr( $group['id'] ); ?>" <?php selected( $group_id, $group['id'] ); ?>>
+						<?php echo esc_html( sprintf( '%1$s (%2$s)', $group['name'], $group['id'] ) ); ?>
+					</option>
+				<?php endforeach; ?>
+			</select>
+			<?php
 		}
 	}
 endif;

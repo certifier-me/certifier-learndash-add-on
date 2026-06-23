@@ -25,6 +25,7 @@ define( 'CERTIFIER_LEARNDASH_API_VERSION', '2022-10-26' );
 define( 'CERTIFIER_LEARNDASH_PLUGIN_FILE', __FILE__ );
 define( 'CERTIFIER_LEARNDASH_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 define( 'CERTIFIER_LEARNDASH_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
+define( 'CERTIFIER_LEARNDASH_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
 require_once CERTIFIER_LEARNDASH_PLUGIN_PATH . 'includes/class-certifier-learndash-settings.php';
 require_once CERTIFIER_LEARNDASH_PLUGIN_PATH . 'includes/class-certifier-learndash-api-client.php';

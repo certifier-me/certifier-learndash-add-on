@@ -57,6 +57,23 @@ if ( ! class_exists( 'Certifier_Learndash_Api_Client' ) ) :
 		}
 
 		/**
+		 * List Certifier groups for admin dropdowns.
+		 *
+		 * @return array<string, mixed>
+		 */
+		public function list_groups( $cursor = null ) {
+			$query = array(
+				'limit' => 100,
+			);
+
+			if ( null !== $cursor && '' !== $cursor ) {
+				$query['cursor'] = (string) $cursor;
+			}
+
+			return $this->request( 'GET', '/v1/groups?' . http_build_query( $query, '', '&', PHP_QUERY_RFC3986 ) );
+		}
+
+		/**
 		 * Create, issue, and send a credential.
 		 *
 		 * @param string $group_id Certifier group ID.
@@ -163,6 +180,10 @@ if ( ! class_exists( 'Certifier_Learndash_Api_Client' ) ) :
 				if ( isset( $body[ $key ] ) && is_scalar( $body[ $key ] ) ) {
 					return (string) $body[ $key ];
 				}
+			}
+
+			if ( isset( $body['error'] ) && is_array( $body['error'] ) && isset( $body['error']['message'] ) && is_scalar( $body['error']['message'] ) ) {
+				return (string) $body['error']['message'];
 			}
 
 			if ( isset( $body['errors'] ) ) {
