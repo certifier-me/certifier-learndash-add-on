@@ -25,6 +25,7 @@ if ( ! class_exists( 'Certifier_Learndash_Admin' ) ) :
 		public function __construct() {
 			add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 			add_action( 'admin_init', array( $this, 'register_settings' ) );
+			add_action( 'admin_init', array( $this, 'add_privacy_policy_content' ) );
 			add_action( 'admin_notices', array( $this, 'render_admin_notices' ) );
 			add_action( 'admin_post_certifier_learndash_test_connection', array( $this, 'handle_test_connection' ) );
 		}
@@ -92,6 +93,23 @@ if ( ! class_exists( 'Certifier_Learndash_Admin' ) ) :
 					'sanitize_callback' => array( 'Certifier_Learndash_Settings', 'sanitize' ),
 					'default'           => Certifier_Learndash_Settings::defaults(),
 				)
+			);
+		}
+
+		/**
+		 * Add suggested privacy policy text for the data sent to Certifier.
+		 */
+		public function add_privacy_policy_content() {
+			if ( ! function_exists( 'wp_add_privacy_policy_content' ) ) {
+				return;
+			}
+
+			$content = '<p>' . __( 'When a learner completes a mapped LearnDash course, this site sends the learner name, email address, mapped Certifier group ID, and issue date to Certifier so a digital credential can be created, issued, and sent.', 'certifier-learndash' ) . '</p>';
+			$content .= '<p>' . __( 'Certifier may process this information according to the site owner\'s agreement with Certifier and the Certifier privacy policy.', 'certifier-learndash' ) . '</p>';
+
+			wp_add_privacy_policy_content(
+				__( 'Certifier for LearnDash', 'certifier-learndash' ),
+				wp_kses_post( wpautop( $content, false ) )
 			);
 		}
 

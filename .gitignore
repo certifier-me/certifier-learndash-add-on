@@ -1,5 +1,13 @@
 node_modules/
 .wp-env/
 .DS_Store
+.env
+.env.*
+.npmrc
+auth.json
+*.sql
+*.sqlite
 *.log
 *.zip
+sfwd-lms*.zip
+learndash*.zip
