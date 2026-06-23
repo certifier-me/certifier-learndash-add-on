@@ -1,0 +1,11 @@
+{
+  "name": "@certifier/learndash-add-on",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "wp-env:start": "npx @wordpress/env start",
+    "wp-env:stop": "npx @wordpress/env stop",
+    "wp-env:clean": "npx @wordpress/env clean all",
+    "php:lint": "find . -path './node_modules' -prune -o -path './.git' -prune -o -name '*.php' -print -exec php -l {} \\;"
+  }
+}

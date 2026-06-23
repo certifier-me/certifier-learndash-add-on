@@ -1,0 +1,7 @@
+{
+  "core": null,
+  "plugins": [".", "./dev/learndash-stub"],
+  "port": 8888,
+  "phpVersion": "8.2",
+  "testsEnvironment": false
+}

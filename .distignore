@@ -1,0 +1,5 @@
+/.wp-env.json
+/.distignore
+/dev
+/node_modules
+/package.json
