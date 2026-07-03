@@ -9,7 +9,7 @@
  * Description: Issue Certifier credentials when learners complete LearnDash courses.
  * Version:     0.1.0
  * Requires at least: 6.2
- * Tested up to: 6.8
+ * Tested up to: 7.0
  * Requires PHP: 8.1
  * Author:      Certifier
  * Author URI:  https://certifier.io

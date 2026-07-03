@@ -2,7 +2,7 @@
 Contributors: certifier
 Tags: certificates, credentials, learndash, lms, digital badges
 Requires at least: 6.2
-Tested up to: 6.8
+Tested up to: 7.0
 Requires PHP: 8.1
 Stable tag: 0.1.0
 License: GPLv2 or later
@@ -32,7 +32,7 @@ Service information is available at https://certifier.io.
 
 == Installation ==
 
-1. Upload the plugin files to the `/wp-content/plugins/certifier-learndash-add-on` directory, or install the plugin through the WordPress plugins screen.
+1. Upload the plugin files to the `/wp-content/plugins/` directory, or install the plugin through the WordPress plugins screen.
 2. Activate the plugin through the Plugins screen in WordPress.
 3. Make sure LearnDash LMS is installed and active.
 4. Go to Certifier for LearnDash > Settings.

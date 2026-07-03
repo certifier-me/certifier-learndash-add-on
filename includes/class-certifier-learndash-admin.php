@@ -183,7 +183,12 @@ if ( ! class_exists( 'Certifier_Learndash_Admin' ) ) :
 							</tr>
 							<tr>
 								<th scope="row"><?php esc_html_e( 'Course mappings', 'certifier-learndash' ); ?></th>
-								<td><?php echo esc_html( sprintf( _n( '%d mapping', '%d mappings', $mappings_count, 'certifier-learndash' ), $mappings_count ) ); ?></td>
+								<td>
+									<?php
+									/* translators: %d: number of saved course mappings. */
+									echo esc_html( sprintf( _n( '%d mapping', '%d mappings', $mappings_count, 'certifier-learndash' ), $mappings_count ) );
+									?>
+								</td>
 							</tr>
 						</tbody>
 					</table>
@@ -484,6 +489,7 @@ if ( ! class_exists( 'Certifier_Learndash_Admin' ) ) :
 
 			$prefix = $wpdb->esc_like( Certifier_Learndash_Settings::USER_META_PREFIX ) . '%';
 
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Read-only admin-screen lookup of plugin-prefixed usermeta; core meta APIs cannot query meta_key by LIKE, and the result must reflect the latest issuance state.
 			return $wpdb->get_results(
 				$wpdb->prepare(
 					"SELECT user_id, meta_key, meta_value FROM {$wpdb->usermeta} WHERE meta_key LIKE %s ORDER BY umeta_id DESC LIMIT 50",
@@ -631,7 +637,10 @@ if ( ! class_exists( 'Certifier_Learndash_Admin' ) ) :
 				<option value=""><?php esc_html_e( 'Select a course', 'certifier-learndash' ); ?></option>
 				<?php if ( $has_saved_course ) : ?>
 					<option value="<?php echo esc_attr( $course_id ); ?>" selected>
-						<?php echo esc_html( sprintf( __( 'Course ID %d (not found)', 'certifier-learndash' ), $course_id ) ); ?>
+						<?php
+						/* translators: %d: LearnDash course post ID. */
+						echo esc_html( sprintf( __( 'Course ID %d (not found)', 'certifier-learndash' ), $course_id ) );
+						?>
 					</option>
 				<?php endif; ?>
 				<?php foreach ( $courses as $course ) : ?>
@@ -659,7 +668,10 @@ if ( ! class_exists( 'Certifier_Learndash_Admin' ) ) :
 				<option value=""><?php esc_html_e( 'Select a Certifier group', 'certifier-learndash' ); ?></option>
 				<?php if ( $has_saved_group ) : ?>
 					<option value="<?php echo esc_attr( $group_id ); ?>" selected>
-						<?php echo esc_html( sprintf( __( 'Saved group ID %s (not found)', 'certifier-learndash' ), $group_id ) ); ?>
+						<?php
+						/* translators: %s: Certifier group ID. */
+						echo esc_html( sprintf( __( 'Saved group ID %s (not found)', 'certifier-learndash' ), $group_id ) );
+						?>
 					</option>
 				<?php endif; ?>
 				<?php foreach ( $groups as $group ) : ?>
