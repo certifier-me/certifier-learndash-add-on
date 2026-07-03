@@ -1,0 +1,60 @@
+name: Deploy to WordPress.org
+
+on:
+  release:
+    types: [released]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to deploy (e.g. v0.1.0)"
+        required: true
+
+jobs:
+  deploy:
+    name: Deploy to WordPress.org SVN
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Verify tag matches plugin version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          tag="${{ github.event.inputs.tag || github.ref_name }}"
+          version="${tag#v}"
+
+          header_version=$(grep -m1 -E '^\s*\*\s*Version:' certifier-learndash.php | awk '{print $NF}')
+          constant_version=$(grep -m1 "CERTIFIER_LEARNDASH_VERSION" certifier-learndash.php | sed -E "s/.*'([^']+)'.*/\1/")
+          stable_tag=$(grep -m1 '^Stable tag:' readme.txt | awk '{print $NF}')
+
+          for v in "$header_version" "$constant_version" "$stable_tag"; do
+            if [ "$v" != "$version" ]; then
+              echo "Version mismatch: tag $tag expects $version, but found header=$header_version constant=$constant_version stable-tag=$stable_tag" >&2
+              exit 1
+            fi
+          done
+
+      # Respects .distignore for trunk contents and syncs .wordpress-org/
+      # (icons, banners, screenshots) to the SVN assets directory.
+      - name: Deploy to WordPress.org
+        id: deploy
+        uses: 10up/action-wordpress-plugin-deploy@2.3.0
+        with:
+          generate-zip: true
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: certifier-learndash
+
+      - name: Upload release asset to GitHub
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.deploy.outputs.zip-path }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,3 +1,7 @@
+/.github
+/.wordpress-org
+/dist
+/LICENSE
 /.wp-env.json
 /.wp-env.stub.json
 /.distignore
