@@ -1,5 +1,5 @@
 === Certifier for LearnDash ===
-Contributors: certifier
+Contributors: kacpercertifier
 Tags: certificates, credentials, learndash, lms, digital badges
 Requires at least: 6.2
 Tested up to: 7.0
@@ -18,17 +18,19 @@ After you configure a Certifier API access token and map LearnDash course IDs to
 
 This plugin requires an active LearnDash LMS installation and a Certifier account.
 
-= External services =
+== External services ==
 
-This plugin connects to the Certifier API to load available Certifier groups and to create, issue, and send credentials.
+This plugin connects to the Certifier API, a digital credential service provided by Certifier (https://certifier.io). It is used to load the list of Certifier groups in the plugin's admin screens and to create, issue, and send digital credentials to learners.
 
-By default, requests are sent to `https://api.certifier.io`. Site administrators may change the API base URL in the plugin settings.
+What data is sent and when:
 
-When the Course Issuance screen is opened, the plugin requests the list of Certifier groups for the saved access token so the groups can be selected from a dropdown.
+* When a site administrator opens the Course Issuance screen or clicks "Test Certifier connection" in Settings, the plugin sends the saved access token to the Certifier API to load the Certifier groups for the dropdowns.
+* When a learner completes a LearnDash course that an administrator has mapped, the plugin sends the learner's name, the learner's email address, the mapped Certifier group ID, and the issue date to the Certifier API so the credential can be created, issued, and emailed to the learner.
 
-When a mapped LearnDash course is completed, the plugin sends the learner name, learner email address, mapped Certifier group ID, and issue date to Certifier. This happens only after a site administrator configures a Certifier access token and course mappings.
+No data is sent to Certifier until a site administrator saves a Certifier access token and maps at least one course. By default, requests are sent to `https://api.certifier.io`; site administrators may change the API base URL in the plugin settings.
 
-Service information is available at https://certifier.io.
+Certifier terms of service: https://certifier.io/terms
+Certifier privacy policy: https://certifier.io/privacy
 
 == Installation ==
 
