@@ -60,6 +60,15 @@ The plugin stores an idempotency record after a successful issue so the same use
 
 Yes. When a mapped course is completed, the plugin sends the learner name, learner email address, mapped Certifier group ID, and issue date to Certifier so the credential can be created, issued, and sent.
 
+== Screenshots ==
+
+1. Choose from more than 1,000 customizable certificate and badge templates.
+2. Upload recipients via spreadsheet or connect them directly from LearnDash.
+3. Send certificates or badges in bulk via email.
+4. Enable recipients to share and download their credentials.
+5. Manage all credentials from one dashboard.
+6. Track how recipients interact with certificates.
+
 == Changelog ==
 
 = 0.1.0 =
